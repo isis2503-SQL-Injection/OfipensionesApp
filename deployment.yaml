@@ -35,7 +35,7 @@ resources:
 
 # Database instance
 - type: compute.v1.instance
-  name: ofipensionesE-db
+  name: ofipensiones-db
   properties:
     zone: us-central1-a
     machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-medium
@@ -142,7 +142,7 @@ resources:
 
 # Health check 
 - type: compute.v1.httpHealthCheck
-  name: ofipensionesE-app-health-check
+  name: ofipensiones-app-health-check
   properties:
     requestPath: /health-check/
     port: 8080
@@ -153,36 +153,17 @@ resources:
 
 # Instance group
 - type: compute.v1.instanceGroup
-  name: ofipensionesE-app-group
+  name: ofipensiones-app-group
   properties:
     namedPorts:
     - name: django
       port: 8080
     instances:
     - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/consultas-app-a
-    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/cosultas-app-b
+    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/consultas-app-b
     zone: us-central1-a
 
 # Load balancer
-- type: compute.v1.globalForwardingRule
-  name: load-balancer-backend
-  properties:
-    loadBalancingScheme: EXTERNAL
-    target: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/targetHttpProxies/load-balancer-backend-proxy
-    IPProtocol: TCP
-    portRange: 80
-    ipVersion: IPV4
-
-- type: compute.v1.targetHttpProxy
-  name: load-balancer-backend-proxy
-  properties:
-    urlMap: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/urlMaps/load-balancer-backend-url-map
-
-- type: compute.v1.urlMap
-  name: load-balancer-backend-url-map
-  properties:
-    defaultService: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/backendServices/load-balancer-backend-service
-
 - type: compute.v1.backendService
   name: load-balancer-backend-service
   properties:
@@ -202,7 +183,28 @@ resources:
     sessionAffinity: NONE
     connectionDraining:
       drainingTimeoutSec: 300
-    localityLbPolicy: LEAST_REQUEST
+    localityLbPolicy: ROUND_ROBIN
+- type: compute.v1.urlMap
+  name: load-balancer-backend-url-map
+  properties:
+    defaultService: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/backendServices/load-balancer-backend-service
+- type: compute.v1.targetHttpProxy
+  name: load-balancer-backend-proxy
+  properties:
+    urlMap: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/urlMaps/load-balancer-backend-url-map
+- type: compute.v1.globalForwardingRule
+  name: load-balancer-backend
+  properties:
+    loadBalancingScheme: EXTERNAL
+    target: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/targetHttpProxies/load-balancer-backend-proxy
+    IPProtocol: TCP
+    portRange: 80
+    ipVersion: IPV4
+
+
+
+
+
 
 
 
