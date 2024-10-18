@@ -1,0 +1,243 @@
+resources:
+# Firewall rules
+- name: firewall-django
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    sourceTags: 
+    - rest-django
+    targetTags:
+    - rest-django
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8080
+    action: ALLOW
+
+- name: firewall-db
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    targetTags:
+    - db-instance
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 5432
+    action: ALLOW
+
+
+# Database instance
+- type: compute.v1.instance
+  name: ofipensionesE-db
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-medium
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+        diskSizeGb: 20
+        diskType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/diskTypes/pd-standard
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.52
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - db-instance
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt-get install -y postgresql postgresql-contrib
+          sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'isis2503';"
+          sudo -u postgres createdb -O admin ofipensionesE_db
+          echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
+          echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+          echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+          sudo service postgresql restart
+
+# Instances
+- type: compute.v1.instance
+  name: consultas-app-a
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-medium
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+        diskSizeGb: 20
+        diskType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/diskTypes/pd-standard
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.53
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - rest-django
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt update 
+          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          pip3 install -r requirements.txt
+- type: compute.v1.instance
+  name: consultas-app-b
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-medium
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+        diskSizeGb: 20
+        diskType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/diskTypes/pd-standard
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.54
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - rest-django
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt update 
+          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          pip3 install -r requirements.txt
+- type: compute.v1.instance
+  name: consultas-app-c
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-medium
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+        diskSizeGb: 20
+        diskType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/diskTypes/pd-standard
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.55
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - rest-django
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt update 
+          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          pip3 install -r requirements.txt
+
+
+# Health check 
+- type: compute.v1.httpHealthCheck
+  name: ofipensionesE-app-health-check
+  properties:
+    requestPath: /health-check/
+    port: 8080
+    checkIntervalSec: 30
+    timeoutSec: 30
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+
+# Instance group
+- type: compute.v1.instanceGroup
+  name: ofipensionesE-app-group
+  properties:
+    namedPorts:
+    - name: django
+      port: 8080
+    instances:
+    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/consultas-app-a
+    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/cosultas-app-b
+    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/cosultas-app-c
+    zone: us-central1-a
+
+# Load balancer
+- type: compute.v1.globalForwardingRule
+  name: load-balancer-backend
+  properties:
+    loadBalancingScheme: EXTERNAL
+    target: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/targetHttpProxies/load-balancer-backend-proxy
+    IPProtocol: TCP
+    portRange: 80
+    ipVersion: IPV4
+
+- type: compute.v1.targetHttpProxy
+  name: load-balancer-backend-proxy
+  properties:
+    urlMap: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/urlMaps/load-balancer-backend-url-map
+
+- type: compute.v1.urlMap
+  name: load-balancer-backend-url-map
+  properties:
+    defaultService: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/backendServices/load-balancer-backend-service
+
+- type: compute.v1.backendService
+  name: load-balancer-backend-service
+  properties:
+    loadBalancingScheme: EXTERNAL
+    protocol: HTTP
+    portName: django
+    timeoutSec: 30
+    healthChecks:
+    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/healthChecks/ofipensiones-app-health-check
+    backends:
+    - group: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instanceGroups/ofipensiones-app-group
+      maxUtilization: 1.0
+    iap:
+      enabled: false
+    cdnPolicy:
+      enabled: false
+    sessionAffinity: NONE
+    connectionDraining:
+      drainingTimeoutSec: 300
+    localityLbPolicy: LEAST_REQUEST
+
+
+
+
