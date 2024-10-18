@@ -138,39 +138,6 @@ resources:
           cd OfipensionesApp
           sudo apt install python3-pip -y
           pip3 install -r requirements.txt
-- type: compute.v1.instance
-  name: consultas-app-c
-  properties:
-    zone: us-central1-a
-    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-medium
-    disks:
-    - deviceName: boot
-      type: PERSISTENT
-      boot: true
-      autoDelete: true
-      initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
-        diskSizeGb: 20
-        diskType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/diskTypes/pd-standard
-    networkInterfaces:
-    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
-      networkIP: 10.128.0.55
-      accessConfigs:
-      - name: External NAT
-        type: ONE_TO_ONE_NAT
-    tags:
-      items: 
-      - rest-django
-    metadata:
-      items:
-      - key: startup-script
-        value: |
-          #!/bin/bash
-          sudo apt update 
-          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
-          cd OfipensionesApp
-          sudo apt install python3-pip -y
-          pip3 install -r requirements.txt
 
 
 # Health check 
@@ -194,7 +161,6 @@ resources:
     instances:
     - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/consultas-app-a
     - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/cosultas-app-b
-    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/cosultas-app-c
     zone: us-central1-a
 
 # Load balancer
