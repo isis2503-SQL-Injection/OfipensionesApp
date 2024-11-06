@@ -92,7 +92,7 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
       networkIP: 10.128.0.52
@@ -129,7 +129,7 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
       networkIP: 10.128.0.53
@@ -166,7 +166,7 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
       networkIP: 10.128.0.54
@@ -201,7 +201,7 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
       networkIP: 10.128.0.55
@@ -237,7 +237,7 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
       networkIP: 10.128.0.51
