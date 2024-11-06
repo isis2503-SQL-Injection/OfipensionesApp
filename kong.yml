@@ -9,6 +9,19 @@ services:
         paths:
           - /pagos/
         strip_path: false
+    plugins:
+      - name: request-termination
+        config:
+          status_code: 302
+          content_type: "application/json"
+          body: '{"message": "Servicio Caído notificando a los chambeadores..."}'
+        enabled: true
+      - name: http-log
+        config:
+          http_endpoint: "http://10.128.0.52:8080/pagos/avisar/"  
+          method: GET
+          timeout: 1000
+          keepalive: 1000
     
 upstreams:
   - name: pagos_health_upstream

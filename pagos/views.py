@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.utils.dateparse import parse_date
 from .models import Pago, Estudiante
 from django.http import HttpResponse
+from ofipensiones.settings import EMAIL_HOST_USER
+from django.core.mail import send_mail
 
 
 def generarReciboPrematricula(request):
@@ -37,3 +39,12 @@ def generarReciboPrematricula(request):
 
 def healtCheck(request):
     return HttpResponse('ok')
+
+def avisar(request):
+    
+    subject = 'FALLA EN OFIPENSIONES'
+    message = 'Warning!!! El sistema de pagos esta caido!!!!'
+    recepient = "ericsalarcond@gmail.com"
+    send_mail(subject, message, EMAIL_HOST_USER, [recepient])
+    
+    return render(request, 'index.html')
