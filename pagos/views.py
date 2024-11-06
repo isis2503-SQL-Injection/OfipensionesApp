@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.utils.dateparse import parse_date
 from .models import Pago, Estudiante
+from django.http import HttpResponse
+
 
 def generarReciboPrematricula(request):
     if request.method == 'GET':
@@ -32,3 +34,6 @@ def generarReciboPrematricula(request):
             return render(request, 'reciboPreMatricula.html', {'error': 'Estudiante no encontrado'})
 
     return render(request, 'reciboPreMatricula.html', {'error': 'Método no permitido'})
+
+def healtCheck(request):
+    return HttpResponse('ok')

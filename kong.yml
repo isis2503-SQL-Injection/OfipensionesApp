@@ -1,0 +1,33 @@
+_format_version: "2.1"
+
+services:
+  - host: pagos_health_upstream
+    name: pagos_health_service
+    protocol: http
+    routes:
+      - name: pagos
+        paths:
+          - /pagos/
+        strip_path: false
+    
+upstreams:
+  - name: pagos_health_upstream
+    targets:
+      - target: 10.128.0.52:8080
+        weight: 100
+      - target: 10.128.0.53:8080
+        weight: 100
+      - target: 10.128.0.54:8080
+        weight: 100
+    healthchecks:
+      threshold: 50
+      active:
+        http_path: /health-check/
+        timeout: 5
+        healthy:
+          successes: 2
+          interval: 5
+        unhealthy:
+          tcp_failures: 2
+          interval: 5
+
