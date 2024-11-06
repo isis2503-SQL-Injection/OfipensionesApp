@@ -115,7 +115,7 @@ resources:
           echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
           echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
           sudo service postgresql restart
-          
+
 
 # Pagos Instance
 - type: compute.v1.instance
@@ -152,7 +152,6 @@ resources:
           echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'e.alarcond@uniandes.edu.co', 'adminclaveinjection')" | python3 manage.py shell 
           python3 manage.py makemigrations
           python3 manage.py migrate
-          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
 
 
 - type: compute.v1.instance
@@ -188,7 +187,6 @@ resources:
           sudo pip3 install -r requirements.txt
           python3 manage.py makemigrations
           python3 manage.py migrate
-          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
 
         
 - type: compute.v1.instance
@@ -224,7 +222,6 @@ resources:
           sudo pip3 install -r requirements.txt
           python3 manage.py makemigrations
           python3 manage.py migrate
-          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
 
 
 # Kong instance
