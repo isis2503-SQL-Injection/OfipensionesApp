@@ -73,7 +73,7 @@ resources:
 
 # Kong instance
 - type: compute.v1.instance
-  name: cbd-kong-instance
+  name: ofipensiones-kong-instance
   properties:
     zone: us-central1-a
     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/zones/us-central1-a/machineTypes/e2-micro
@@ -96,7 +96,7 @@ resources:
 
 # Database instance
 - type: compute.v1.instance
-  name: cbd-db-instance
+  name: ofipensiones-db-instance
   properties:
     zone: us-central1-a
     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/zones/us-central1-a/machineTypes/e2-micro
@@ -123,8 +123,8 @@ resources:
           #!/bin/bash
           sudo apt-get update
           sudo apt-get install -y postgresql postgresql-contrib
-          sudo -u postgres psql -c "CREATE USER monitoring_user WITH PASSWORD 'isis2503';"
-          sudo -u postgres createdb -O monitoring_user monitoring_db
+          sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'oficlaveinjection';"
+          sudo -u postgres createdb -O admin ofipensionesdb
           echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
           echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
           echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
@@ -132,7 +132,7 @@ resources:
 
 # Alarms instances
 - type: compute.v1.instance
-  name: cbd-alarms-app-a
+  name: instance-pago-a
   properties:
     zone: us-central1-a
     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/zones/us-central1-a/machineTypes/e2-micro
@@ -158,15 +158,14 @@ resources:
         value: |
           #!/bin/bash
           sudo apt-get update
+          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
           sudo apt install python3-pip -y
-          sudo mkdir /labs
-          cd /labs
-          sudo git clone https://github.com/ISIS2503/ISIS2503-MonitoringApp.git
-          cd ISIS2503-MonitoringApp
-          sudo git checkout Circuit-Breaker
           sudo pip3 install -r requirements.txt
+          python3 manage.py makemigrations
+          python3 manage.py migrate
 - type: compute.v1.instance
-  name: cbd-alarms-app-b
+  name: instance-pago-b
   properties:
     zone: us-central1-a
     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/zones/us-central1-a/machineTypes/e2-micro
@@ -192,15 +191,14 @@ resources:
         value: |
           #!/bin/bash
           sudo apt-get update
+          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
           sudo apt install python3-pip -y
-          sudo mkdir /labs
-          cd /labs
-          sudo git clone https://github.com/ISIS2503/ISIS2503-MonitoringApp.git
-          cd ISIS2503-MonitoringApp
-          sudo git checkout Circuit-Breaker
           sudo pip3 install -r requirements.txt
+          python3 manage.py makemigrations
+          python3 manage.py migrate
 - type: compute.v1.instance
-  name: cbd-alarms-app-c
+  name: instance-pago-c
   properties:
     zone: us-central1-a
     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/zones/us-central1-a/machineTypes/e2-micro
@@ -226,10 +224,9 @@ resources:
         value: |
           #!/bin/bash
           sudo apt-get update
+          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
           sudo apt install python3-pip -y
-          sudo mkdir /labs
-          cd /labs
-          sudo git clone https://github.com/ISIS2503/ISIS2503-MonitoringApp.git
-          cd ISIS2503-MonitoringApp
-          sudo git checkout Circuit-Breaker
           sudo pip3 install -r requirements.txt
+          python3 manage.py makemigrations
+          python3 manage.py migrate
