@@ -40,6 +40,9 @@ def generarReciboPrematricula(request):
 def healtCheck(request):
     return HttpResponse('ok')
 
+def menu(request):
+    return render(request, 'pagoMenu.html')
+
 def avisar(request):
     
     subject = 'FALLA EN OFIPENSIONES'
