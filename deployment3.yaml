@@ -1,28 +1,20 @@
-# Infraestructura para Despliegue de Seguridad
-# Elementos a desplegar:
-# 2. Instancias MVs:
-#    - cbd-kong-instance
-#    - cbd-db-instance (postgreSQL instalado y configurado)
-#    - cbd-alarms-app-(a-c) (Monitoring app instalada)
-#    - cbd-monitoring-app (Monitoring app instalada y ejecutando)
-
 resources:
 # Firewall rules
-- name: ofipension-services-apps
+- name: cbd-services-apps
   type: compute.v1.firewall
   properties:
     network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
     priority: 1000
     direction: INGRESS
     sourceTags: 
-    - ofipension-circuit-breaker
+    - cbd-circuit-breaker
     targetTags:
-    - ofipension-services-firewall
+    - cbd-services-firewall
     allowed:
     - IPProtocol: TCP
       ports: 
       - 8080
-- name: ofipension-services-apps-web
+- name: cbd-services-apps-web
   type: compute.v1.firewall
   properties:
     network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
@@ -31,12 +23,12 @@ resources:
     sourceRanges: 
     - 0.0.0.0/0
     targetTags:
-    - ofipension-services-firewall
+    - cbd-services-firewall
     allowed:
     - IPProtocol: TCP
       ports: 
       - 8080
-- name: ofipension-circuit-breaker
+- name: cbd-circuit-breaker
   type: compute.v1.firewall
   properties:
     network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
@@ -45,12 +37,12 @@ resources:
     sourceRanges: 
     - 0.0.0.0/0
     targetTags:
-    - ofipension-circuit-breaker
+    - cbd-circuit-breaker
     allowed:
     - IPProtocol: TCP
       ports: 
       - 8000
-- name: ofipension-circuit-breaker-admin
+- name: cbd-circuit-breaker-admin
   type: compute.v1.firewall
   properties:
     network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
@@ -59,26 +51,48 @@ resources:
     sourceRanges: 
     - 0.0.0.0/0
     targetTags:
-    - ofipension-circuit-breaker
+    - cbd-circuit-breaker
     allowed:
     - IPProtocol: TCP
       ports: 
       - 8001
-- name: ofipension-ofi-db
+- name: cbd-monitoring-db
   type: compute.v1.firewall
   properties:
     network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
     priority: 1000
     direction: INGRESS
     sourceTags: 
-    - ofipension-services-firewall
+    - cbd-services-firewall
     targetTags:
-    - ofipension-ofi-db
+    - cbd-monitoring-db
     allowed:
     - IPProtocol: TCP
       ports: 
       - 5432
-     
+
+# Kong instance
+- type: compute.v1.instance
+  name: ofipensiones-kong-instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
+      networkIP: 10.128.0.51
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbd-circuit-breaker
 
 # Database instance
 - type: compute.v1.instance
@@ -92,7 +106,7 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
       networkIP: 10.128.0.52
@@ -101,7 +115,7 @@ resources:
         type: ONE_TO_ONE_NAT
     tags:
       items: 
-      - ofipension-ofi-db
+      - cbd-monitoring-db
     metadata:
       items:
       - key: startup-script
@@ -116,8 +130,7 @@ resources:
           echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
           sudo service postgresql restart
 
-
-# Pagos Instance
+# Alarms instances
 - type: compute.v1.instance
   name: instance-pago-a
   properties:
@@ -129,7 +142,7 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
       networkIP: 10.128.0.53
@@ -138,21 +151,19 @@ resources:
         type: ONE_TO_ONE_NAT
     tags:
       items: 
-      - ofipension-services-firewall
+      - cbd-services-firewall
     metadata:
       items:
       - key: startup-script
         value: |
           #!/bin/bash
           sudo apt-get update
-          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
           cd OfipensionesApp
           sudo apt install python3-pip -y
           sudo pip3 install -r requirements.txt
-          sudo python3 manage.py makemigrations
-          sudo python3 manage.py migrate
-
-
+          python3 manage.py makemigrations
+          python3 manage.py migrate
 - type: compute.v1.instance
   name: instance-pago-b
   properties:
@@ -164,7 +175,7 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
       networkIP: 10.128.0.54
@@ -173,21 +184,19 @@ resources:
         type: ONE_TO_ONE_NAT
     tags:
       items: 
-      - ofipension-services-firewall
+      - cbd-services-firewall
     metadata:
       items:
       - key: startup-script
         value: |
           #!/bin/bash
           sudo apt-get update
-          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
           cd OfipensionesApp
           sudo apt install python3-pip -y
           sudo pip3 install -r requirements.txt
-          sudo python3 manage.py makemigrations
-          sudo python3 manage.py migrate
-
-  
+          python3 manage.py makemigrations
+          python3 manage.py migrate
 - type: compute.v1.instance
   name: instance-pago-c
   properties:
@@ -199,7 +208,7 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
       networkIP: 10.128.0.55
@@ -208,58 +217,16 @@ resources:
         type: ONE_TO_ONE_NAT
     tags:
       items: 
-      - ofipension-services-firewall
+      - cbd-services-firewall
     metadata:
       items:
       - key: startup-script
         value: |
           #!/bin/bash
           sudo apt-get update
-          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
           cd OfipensionesApp
           sudo apt install python3-pip -y
           sudo pip3 install -r requirements.txt
-          sudo python3 manage.py makemigrations
-          sudo python3 manage.py migrate
-
-
-# Kong instance
-- type: compute.v1.instance
-  name: pagos-kong-instance
-  properties:
-    zone: us-central1-a
-    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/zones/us-central1-a/machineTypes/e2-micro
-    disks:
-    - deviceName: boot
-      type: PERSISTENT
-      boot: true
-      autoDelete: true
-      initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
-    networkInterfaces:
-    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
-      networkIP: 10.128.0.51
-      accessConfigs:
-      - name: External NAT
-        type: ONE_TO_ONE_NAT
-    tags:
-      items: 
-      - ofipension-circuit-breaker
-    metadata:
-      items:
-      - key: startup-script
-        value: |
-          #!/bin/bash
-          sudo apt-get update
-          sudo apt-get install ca-certificates curl gnupg lsb-release -y
-          sudo mkdir -m 0755 -p /etc/apt/keyrings
-          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-          sudo apt-get update
-          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-          sudo groupadd docker
-          sudo usermod -aG docker $USER
-          sudo newgrp docker
-          sudo docker network create kong-net
-          sudo docker run -d --name kong --network=kong-net -v "$(pwd):/kong/declarative/" -e "KONG_DATABASE=off" -e "KONG_DECLARATIVE_CONFIG=/kong/declarative/kong.yml" -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" -e "KONG_PROXY_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_LISTEN=0.0.0.0:8001" -e "KONG_ADMIN_GUI_URL=http://localhost:8002" -p 8000:8000 -p 8001:8001 -p 8002:8002 kong/kong-gateway:2.7.2.0-alpi
-     
+          python3 manage.py makemigrations
+          python3 manage.py migrate
