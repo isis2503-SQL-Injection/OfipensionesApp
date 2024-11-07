@@ -295,46 +295,15 @@ resources:
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
           sudo apt-get update
           sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-          sudo groupadd docker
-          sudo usermod -aG docker $USER
-          sudo newgrp docker
-          sudo cat <<EOF > kong.yml
-          _format_version: "2.1"
+         
+#sudo groupadd docker
+#sudo usermod -aG docker $USER
+#sudo newgrp docker 
 
-          services:
-            - host: pagos_health_upstream
-              name: pagos_health_service
-              protocol: http
-              routes:
-                - name: pagos
-                  paths:
-                    - /pagos
-                    - /pagos/menu/
-                  strip_path: false
+#(cerrar y abrir terminal)
 
-              
-          upstreams:
-            - name: pagos_health_upstream
-              targets:
-                - target: 10.128.0.52:8080
-                  weight: 100
-                - target: 10.128.0.53:8080
-                  weight: 100
-                - target: 10.128.0.54:8080
-                  weight: 100
-              healthchecks:
-                threshold: 50
-                active:
-                  http_path: /health-check/
-                  timeout: 5
-                  healthy:
-                    successes: 2
-                    interval: 5
-                  unhealthy:
-                    tcp_failures: 2
-                    interval: 5
-          EOF          
-          sudo docker network create kong-net
-          sudo docker run -d --name kong --network=kong-net -v "$(pwd):/kong/declarative/" -e "KONG_DATABASE=off" -e "KONG_DECLARATIVE_CONFIG=/kong/declarative/kong.yml" -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" -e "KONG_PROXY_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_LISTEN=0.0.0.0:8001" -e "KONG_ADMIN_GUI_URL=http://localhost:8002" -p 8000:8000 -p 8001:8001 -p 8002:8002 kong/kong-gateway:2.7.2.0-alpine
-          sudo docker ps
+#sudo nano kong.yml (pegar el contenido del archivo kong.yml)       
+#sudo docker network create kong-net
+#sudo docker run -d --name kong --network=kong-net -v "$(pwd):/kong/declarative/" -e "KONG_DATABASE=off" -e "KONG_DECLARATIVE_CONFIG=/kong/declarative/kong.yml" -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" -e "KONG_PROXY_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_LISTEN=0.0.0.0:8001" -e "KONG_ADMIN_GUI_URL=http://localhost:8002" -p 8000:8000 -p 8001:8001 -p 8002:8002 kong/kong-gateway:2.7.2.0-alpine
+#sudo docker ps
      

@@ -8,10 +8,9 @@ services:
       - name: pagos
         paths:
           - /pagos
-          -/pagos/menu/
+          - /pagos/menu/
         strip_path: false
 
-    
 upstreams:
   - name: pagos_health_upstream
     targets:
@@ -32,4 +31,3 @@ upstreams:
         unhealthy:
           tcp_failures: 2
           interval: 5
-
