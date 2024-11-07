@@ -305,6 +305,7 @@ resources:
                 - name: pagos
                   paths:
                     - /pagos
+                    - /pagos/menu/
                   strip_path: false
 
               
