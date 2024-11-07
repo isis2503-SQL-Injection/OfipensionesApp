@@ -1,105 +1,235 @@
 resources:
 # Firewall rules
-- name: ofipension-services-apps
+- name: cbd-services-apps
   type: compute.v1.firewall
   properties:
-    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
     priority: 1000
     direction: INGRESS
     sourceTags: 
-    - ofipension-circuit-breaker
+    - cbd-circuit-breaker
     targetTags:
-    - ofipension-services-firewall
+    - cbd-services-firewall
     allowed:
     - IPProtocol: TCP
       ports: 
       - 8080
-- name: ofipension-services-apps-web
+- name: cbd-services-apps-web
   type: compute.v1.firewall
   properties:
-    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
     priority: 1000
     direction: INGRESS
     sourceRanges: 
     - 0.0.0.0/0
     targetTags:
-    - ofipension-services-firewall
+    - cbd-services-firewall
     allowed:
     - IPProtocol: TCP
       ports: 
       - 8080
-- name: ofipension-circuit-breaker
+- name: cbd-circuit-breaker
   type: compute.v1.firewall
   properties:
-    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
     priority: 1000
     direction: INGRESS
     sourceRanges: 
     - 0.0.0.0/0
     targetTags:
-    - ofipension-circuit-breaker
+    - cbd-circuit-breaker
     allowed:
     - IPProtocol: TCP
       ports: 
       - 8000
-- name: ofipension-circuit-breaker-admin
+- name: cbd-circuit-breaker-admin
   type: compute.v1.firewall
   properties:
-    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
     priority: 1000
     direction: INGRESS
     sourceRanges: 
     - 0.0.0.0/0
     targetTags:
-    - ofipension-circuit-breaker
+    - cbd-circuit-breaker
     allowed:
     - IPProtocol: TCP
       ports: 
       - 8001
-- name: ofipension-ofi-db
+- name: cbd-monitoring-db
   type: compute.v1.firewall
   properties:
-    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
     priority: 1000
     direction: INGRESS
     sourceTags: 
-    - ofipension-services-firewall
+    - cbd-services-firewall
     targetTags:
-    - ofipension-ofi-db
+    - cbd-monitoring-db
     allowed:
     - IPProtocol: TCP
       ports: 
       - 5432
+
+# Kong instance
 - type: compute.v1.instance
-  name: instance-pago-b
+  name: cbd-kong-instance
   properties:
     zone: us-central1-a
-    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/zones/us-central1-a/machineTypes/e2-micro
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
     disks:
     - deviceName: boot
       type: PERSISTENT
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
     networkInterfaces:
-    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-434902/global/networks/default
-      networkIP: 10.128.0.54
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.51
       accessConfigs:
       - name: External NAT
         type: ONE_TO_ONE_NAT
     tags:
       items: 
-      - ofipension-services-firewall
+      - cbd-circuit-breaker
+
+# Database instance
+- type: compute.v1.instance
+  name: cbd-db-instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.52
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbd-monitoring-db
     metadata:
       items:
       - key: startup-script
         value: |
           #!/bin/bash
           sudo apt-get update
-          git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
-          cd OfipensionesApp
+          sudo apt-get install -y postgresql postgresql-contrib
+          sudo -u postgres psql -c "CREATE USER monitoring_user WITH PASSWORD 'isis2503';"
+          sudo -u postgres createdb -O monitoring_user monitoring_db
+          echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
+          echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+          echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+          sudo service postgresql restart
+
+# Alarms instances
+- type: compute.v1.instance
+  name: cbd-alarms-app-a
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.53
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbd-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
           sudo apt install python3-pip -y
+          sudo mkdir /labs
+          cd /labs
+          sudo git clone https://github.com/ISIS2503/ISIS2503-MonitoringApp.git
+          cd ISIS2503-MonitoringApp
+          sudo git checkout Circuit-Breaker
           sudo pip3 install -r requirements.txt
-          python3 manage.py makemigrations
-          python3 manage.py migrate
+- type: compute.v1.instance
+  name: cbd-alarms-app-b
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.54
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbd-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt install python3-pip -y
+          sudo mkdir /labs
+          cd /labs
+          sudo git clone https://github.com/ISIS2503/ISIS2503-MonitoringApp.git
+          cd ISIS2503-MonitoringApp
+          sudo git checkout Circuit-Breaker
+          sudo pip3 install -r requirements.txt
+- type: compute.v1.instance
+  name: cbd-alarms-app-c
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.55
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbd-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt install python3-pip -y
+          sudo mkdir /labs
+          cd /labs
+          sudo git clone https://github.com/ISIS2503/ISIS2503-MonitoringApp.git
+          cd ISIS2503-MonitoringApp
+          sudo git checkout Circuit-Breaker
+          sudo pip3 install -r requirements.txt
