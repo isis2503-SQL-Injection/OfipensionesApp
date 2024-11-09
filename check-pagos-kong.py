@@ -28,4 +28,4 @@ if __name__ == "__main__":
         if not check_kong_status():
             send_failure_email()
             break
-        time.sleep(10)
+        time.sleep(30)

@@ -29,5 +29,6 @@ upstreams:
           successes: 2
           interval: 5
         unhealthy:
-          tcp_failures: 2
+          http_failures: 10
+          tcp_failures: 10
           interval: 5
