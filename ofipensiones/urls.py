@@ -23,4 +23,7 @@ urlpatterns = [
     path('health-check/', views.healtCheck),
     path('pagos/', include('pagos.urls')),
     path('cuenta/', include('cuenta.urls')),
+    path('cobro/', include('cobro.urls')),
+    path('descuento/', include('descuento.urls')),
+
 ]
