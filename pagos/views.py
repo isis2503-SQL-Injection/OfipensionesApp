@@ -52,3 +52,23 @@ def avisar(request):
     send_mail(subject, message, EMAIL_HOST_USER, [recepient])
     
     return render(request, 'index.html')
+
+#Para autenticar con el codigo
+@login_required
+def VerReciboPrematricula(request):
+    codigo_estudiante = request.GET.get('codigoEstudiante')
+    role = getRole(request)
+    if role == codigo_estudiante:
+        estudiante = Estudiante.objects.get(codigoEstudiante=codigo_estudiante)
+        pagos_matricula = Pago.objects.filter(
+                estudiante=estudiante,
+                tipo='matricula',
+                estado='noPago'
+            )
+        context = {
+                'pagos': pagos_matricula,
+                'estudiante': estudiante
+            }        
+        return render(request, 'pagos/reciboPreMatricula.html', context)
+    else:
+        return HttpResponse("Unauthorized User")

@@ -33,9 +33,9 @@ def getRole(request):
 	user = request.user
 	auth0user = user.social_auth.filter(provider="auth0")[0]
 	accessToken = auth0user.extra_data['access_token']
-	url = "https://<dominio>/userinfo"
+	url = "https://dev-58o2d2rv00kn78f5.us.auth0.com/userinfo"
 	headers = {'authorization': 'Bearer ' + accessToken}
 	resp = requests.get(url, headers=headers)
 	userinfo = resp.json()
-	role = userinfo['<dominio>/role']
+	role = userinfo['dev-58o2d2rv00kn78f5.us.auth0.com/role']
 	return (role)
