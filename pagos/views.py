@@ -5,6 +5,8 @@ from django.http import HttpResponse
 from ofipensiones.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 from ofipensiones.auth0backend import getRole
+from django.contrib.auth.decorators import login_required
+
 
 
 def generarReciboPrematricula(request):

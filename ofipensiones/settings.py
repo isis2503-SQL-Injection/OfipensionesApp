@@ -44,7 +44,9 @@ INSTALLED_APPS = [
     'matricula',
     'reciboPago',
     'reporte',
-    'social_django'
+    'social_django',
+    'cobro',
+    'descuento',
 ]
 
 MIDDLEWARE = [
@@ -87,7 +89,7 @@ DATABASES = {
         'NAME': 'ofipensionesdb',
         'USER': 'admin',
         'PASSWORD': 'oficlaveinjection',
-        'HOST': '10.128.0.52',
+        'HOST': '10.128.0.60',
         'PORT': '5432',
     }
 }
