@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'matricula',
     'reciboPago',
     'reporte',
+    'social_django'
 ]
 
 MIDDLEWARE = [
@@ -143,3 +144,23 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'ericsalarcond@gmail.com'
 EMAIL_HOST_PASSWORD = 'ykeb cpga sfjy heod'
+
+#Integracion de Auth0
+
+LOGIN_URL = "/login/auth0"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL ="https://<dominio>/v2/logout?returnTo=http%3A%2F%2F<ip_publica_instancia>"
+SOCIAL_AUTH_TRAILING_SLASH = False # Remove end slash from routes
+SOCIAL_AUTH_AUTH0_DOMAIN = '<dominio>'
+SOCIAL_AUTH_AUTH0_KEY = '<client_id>'
+SOCIAL_AUTH_AUTH0_SECRET = '<client_secret>'
+SOCIAL_AUTH_AUTH0_SCOPE = [
+	'openid',
+	'profile',
+	'email',
+	'role',
+]
+AUTHENTICATION_BACKENDS = {
+	'monitoring.auth0backend.Auth0',
+	'django.contrib.auth.backends.ModelBackend',
+}

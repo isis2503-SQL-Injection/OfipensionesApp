@@ -25,5 +25,7 @@ urlpatterns = [
     path('cuenta/', include('cuenta.urls')),
     path('cobro/', include('cobro.urls')),
     path('descuento/', include('descuento.urls')),
+    path(r'', include('django.contrib.auth.urls')),
+    path(r'', include('social_django.urls'))
 
 ]

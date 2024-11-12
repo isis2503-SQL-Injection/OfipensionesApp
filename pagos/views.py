@@ -4,6 +4,7 @@ from .models import Pago, Estudiante
 from django.http import HttpResponse
 from ofipensiones.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
+from ofipensiones.auth0backend import getRole
 
 
 def generarReciboPrematricula(request):
