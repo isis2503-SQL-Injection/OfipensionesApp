@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'social_django',
     'cobro',
     'descuento',
+    'responsableEconomico',
 ]
 
 MIDDLEWARE = [
