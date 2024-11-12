@@ -14,11 +14,11 @@ services:
 upstreams:
   - name: pagos_health_upstream
     targets:
-      - target: 10.128.0.52:8080
-        weight: 100
       - target: 10.128.0.53:8080
         weight: 100
       - target: 10.128.0.54:8080
+        weight: 100
+      - target: 10.128.0.55:8080
         weight: 100
     healthchecks:
       threshold: 50
