@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     'matricula',
     'reciboPago',
     'reporte',
+    'social_django',
+    'cobro',
+    'descuento',
 ]
 
 MIDDLEWARE = [
@@ -86,7 +89,7 @@ DATABASES = {
         'NAME': 'ofipensionesdb',
         'USER': 'admin',
         'PASSWORD': 'oficlaveinjection',
-        'HOST': '10.128.0.52',
+        'HOST': '10.128.0.60',
         'PORT': '5432',
     }
 }
@@ -143,3 +146,23 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'ericsalarcond@gmail.com'
 EMAIL_HOST_PASSWORD = 'ykeb cpga sfjy heod'
+
+#Integracion de Auth0
+
+LOGIN_URL = "/login/auth0"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL ="https://dev-58o2d2rv00kn78f5.us.auth0.com/v2/logout?returnTo=http%3A%2F%2F<ip_publica_instancia>"
+SOCIAL_AUTH_TRAILING_SLASH = False # Remove end slash from routes
+SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-58o2d2rv00kn78f5.us.auth0.com'
+SOCIAL_AUTH_AUTH0_KEY = 'kJfxxY2ndiUaAoKSCaPHOvMKTpg59C5C'
+SOCIAL_AUTH_AUTH0_SECRET = 'F2KMBBaSsNqHhkB3gIoc1Sy95Xm1oZS4geiz-QIknp_ATJypyqh3FnQlLRjkvr47'
+SOCIAL_AUTH_AUTH0_SCOPE = [
+	'openid',
+	'profile',
+	'email',
+	'role',
+]
+AUTHENTICATION_BACKENDS = {
+	'ofipensiones.auth0backend.Auth0',
+	'django.contrib.auth.backends.ModelBackend',
+}
