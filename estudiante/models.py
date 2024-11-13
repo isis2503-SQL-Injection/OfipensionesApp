@@ -6,7 +6,7 @@ class Estudiante(models.Model):
     fechaNacimiento = models.DateTimeField(null = False, blank = False)  
     grado = models.CharField(max_length=100) 
     objects = models.Manager()
-    responsable_economico = models.ForeignKey(ResponsableEconomico,on_delete=models.CASCADE, related_name='estudiantes')
+    responsable_economico = models.ForeignKey(ResponsableEconomico, on_delete=models.CASCADE, related_name='estudiantes', null=True, blank=True)
     
     
 

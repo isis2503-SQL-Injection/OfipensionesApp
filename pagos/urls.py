@@ -6,7 +6,5 @@ urlpatterns = [
     path('health-check/', views.healtCheck),
     path('menu/', views.menu),
     path('avisar/', views.avisar),
-    path('auth0_recibo_prematricula/', views.VerReciboPrematricula, name='auth0_recibo_prematricula'),
-
     
 ]
