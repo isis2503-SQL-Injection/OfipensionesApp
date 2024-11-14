@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'cobro',
     'descuento',
     'responsableEconomico',
+    'usuario'
 ]
 
 MIDDLEWARE = [
@@ -90,7 +91,7 @@ DATABASES = {
         'NAME': 'ofipensionesdb',
         'USER': 'admin',
         'PASSWORD': 'oficlaveinjection',
-        'HOST': '10.128.0.60',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
@@ -150,9 +151,11 @@ EMAIL_HOST_PASSWORD = 'ykeb cpga sfjy heod'
 
 #Integracion de Auth0
 
+# /pagos/generar_recibo_prematricula/?codigoEstudiante=201130766&fecha=2024-11-12
+
 LOGIN_URL = "/login/auth0"
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL ="https://dev-58o2d2rv00kn78f5.us.auth0.com/v2/logout?returnTo=http%3A%2F%2F<ip_publica_instancia>"
+LOGOUT_REDIRECT_URL ="https://dev-58o2d2rv00kn78f5.us.auth0.com/v2/logout?returnTo=http%3A%2F%2Flocalhost"
 SOCIAL_AUTH_TRAILING_SLASH = False # Remove end slash from routes
 SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-58o2d2rv00kn78f5.us.auth0.com'
 SOCIAL_AUTH_AUTH0_KEY = 'kJfxxY2ndiUaAoKSCaPHOvMKTpg59C5C'

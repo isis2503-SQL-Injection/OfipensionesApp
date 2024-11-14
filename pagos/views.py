@@ -53,6 +53,7 @@ def generarReciboPrematricula(request):
 def healtCheck(request):
     return HttpResponse('ok')
 
+@login_required
 def menu(request):
     return render(request, 'pagoMenu.html')
 

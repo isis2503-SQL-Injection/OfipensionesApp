@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ofipensiones</title>
+    <a href="{% url 'logout' %}">Cerrar Sesión</a>
+    <form class="form-inline my-2 my-lg-0">
+        {% if user.is_authenticated %}
+        <ul class="nav navbar-nav navbar-right">
+            <li><a style="font-size:120%" class="nav-link">{{ user.username }}</a></li>
+            <li><a style="font-size:120%; padding-right:20px" class="nav-link" href="/logout">Log out</a></li>
+        </ul>
+        {% else %}
+        <ul class="nav navbar-nav navbar-right">
+            <li><a style="font-size:120%; padding-right:20px" class="navbar-link" href="/login/auth0">Login</a></li>
+        </ul>
+        {% endif %}
+      </form>
     <style>
         body {
             font-family: Arial, sans-serif;
