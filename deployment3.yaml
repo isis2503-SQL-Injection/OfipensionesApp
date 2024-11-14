@@ -1,0 +1,326 @@
+# Infraestructura para Despliegue de Broker de Servicios
+# Elementos a desplegar:
+# 1. Reglas de firewall:
+#     - ofipension-services-apps
+#     - ofipension-services-apps-web
+#     - ofipension-circuit-breaker
+#     - ofipension-circuit-breaker-admin
+#     - ofipension-ofi-db
+
+# 2. Instancias MVs:
+#    - kong-instance
+#    - ofipensiones-db-instance
+#    - instance-pago
+#    - instance-cobro
+#    - instance-descuento
+#    - instance-usuario
+
+resources:
+# Firewall rules
+- name: ofipension-services-apps
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - ofipension-circuit-breaker
+    targetTags:
+    - ofipension-services-firewall
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8080
+- name: ofipension-services-apps-web
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - ofipension-services-firewall
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8080
+- name: ofipension-circuit-breaker
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - ofipension-circuit-breaker
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8000
+- name: ofipension-circuit-breaker-admin
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - ofipension-circuit-breaker
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8001
+- name: ofipension-ofi-db
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - ofipension-services-firewall
+    targetTags:
+    - ofipension-ofi-db
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 5432
+     
+# Maquinas virtuales
+  # Database instance
+- type: compute.v1.instance
+  name: ofipensiones-db-instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.52
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - ofipension-ofi-db
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt-get install -y postgresql postgresql-contrib
+          sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'oficlaveinjection';"
+          sudo -u postgres createdb -O admin ofipensionesdb
+          echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
+          echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+          echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+          sudo service postgresql restart
+
+  # Pago Instance
+- type: compute.v1.instance
+  name: instance-pago
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.53
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - ofipension-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+  # Cobro Instance
+- type: compute.v1.instance
+  name: instance-cobro
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.54
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - ofipension-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+  # Descuento instance
+- type: compute.v1.instance
+  name: instance-descuento
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.55
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - ofipension-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+  # Usuario instance
+- type: compute.v1.instance
+  name: instance-usuario
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.56
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - ofipension-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+
+# Kong instance
+- type: compute.v1.instance
+  name: kong-instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.51
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - ofipension-circuit-breaker
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt-get install ca-certificates curl gnupg lsb-release -y
+          sudo mkdir -m 0755 -p /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+         
+#sudo groupadd docker
+#sudo usermod -aG docker $USER
+#sudo newgrp docker 
+
+#(cerrar y abrir terminal)
+
+#sudo nano kong.yml (pegar el contenido del archivo kong.yml)       
+#sudo docker network create kong-net
+#sudo docker run -d --name kong --network=kong-net -v "$(pwd):/kong/declarative/" -e "KONG_DATABASE=off" -e "KONG_DECLARATIVE_CONFIG=/kong/declarative/kong.yml" -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" -e "KONG_PROXY_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_LISTEN=0.0.0.0:8001" -e "KONG_ADMIN_GUI_URL=http://localhost:8002" -p 8000:8000 -p 8001:8001 -p 8002:8002 kong/kong-gateway:2.7.2.0-alpine
+#sudo docker ps
+
+#Ejecutar Monitoreo
+#python3 check-pagos-kong.py
+
+
+#PARA MATAR
+
+#ps aux | grep "manage.py runserver"
+#kill 1111

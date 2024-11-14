@@ -2,8 +2,8 @@ _format_version: "2.1"
 
 services:
   # pagos
-  - host: pagos_health_upstream
-    name: pagos_health_service
+  - host: pagos_upstream
+    name: pagos_service
     protocol: http
     routes:
       - name: pagos
@@ -12,18 +12,19 @@ services:
           - /pagos/menu/
         strip_path: false
         plugins:
-          - name: rate-limiting-advanced
+          - name: rate-limiting
+          #- name: rate-limiting-advanced
             config:
               minute: 100
               limit_by: ip
               policy: local
-              block_on_first_violation: true  # Bloquea inmediatamente la ip del atacante si se excede el límite
-              fault_tolerant: false           # Asegura que si el plugin falla, no permite más peticiones
-              ban_duration: 600               # Bloquea la ip del atacante durante 10 minutos (600 segundos)
+              #block_on_first_violation: true   # Bloquea inmediatamente la ip del atacante si se excede el límite
+              #fault_tolerant: false            # Asegura que si el plugin falla, no permite más peticiones
+              #ban_duration: 600                # Bloquea la ip del atacante durante 10 minutos (600 segundos)           
 
   # cobros
-  - host: cobros_health_upstream
-    name: cobros_health_service
+  - host: cobros_upstream
+    name: cobros_service
     protocol: http
     routes:
       - name: cobros
@@ -31,18 +32,19 @@ services:
           - /cobros
         strip_path: false
         plugins:
-          - name: rate-limiting-advanced
+          - name: rate-limiting
+          #- name: rate-limiting-advanced
             config:
               minute: 100
               limit_by: ip
               policy: local
-              block_on_first_violation: true
-              fault_tolerant: false
-              ban_duration: 600
+              #block_on_first_violation: true   # Bloquea inmediatamente la ip del atacante si se excede el límite
+              #fault_tolerant: false            # Asegura que si el plugin falla, no permite más peticiones
+              #ban_duration: 600                # Bloquea la ip del atacante durante 10 minutos (600 segundos)
 
   # descuentos
-  - host: descuentos_health_upstream
-    name: descuentos_health_service
+  - host: descuentos_upstream
+    name: descuentos_service
     protocol: http
     routes:
       - name: descuentos
@@ -50,18 +52,19 @@ services:
           - /descuentos
         strip_path: false
         plugins:
-          - name: rate-limiting-advanced
+          - name: rate-limiting
+          #- name: rate-limiting-advanced
             config:
               minute: 100
               limit_by: ip
               policy: local
-              block_on_first_violation: true
-              fault_tolerant: false
-              ban_duration: 600
+              #block_on_first_violation: true   # Bloquea inmediatamente la ip del atacante si se excede el límite
+              #fault_tolerant: false            # Asegura que si el plugin falla, no permite más peticiones
+              #ban_duration: 600                # Bloquea la ip del atacante durante 10 minutos (600 segundos)
 
   # usuarios
-  - host: usuarios_health_upstream
-    name: usuarios_health_service
+  - host: usuarios_upstream
+    name: usuarios_service
     protocol: http
     routes:
       - name: usuarios
@@ -69,36 +72,38 @@ services:
           - /usuarios
         strip_path: false
         plugins:
-          - name: rate-limiting-advanced
+          - name: rate-limiting
+          #- name: rate-limiting-advanced
             config:
               minute: 100
               limit_by: ip
               policy: local
-              block_on_first_violation: true
-              fault_tolerant: false
-              ban_duration: 600
+              #block_on_first_violation: true   # Bloquea inmediatamente la ip del atacante si se excede el límite
+              #fault_tolerant: false            # Asegura que si el plugin falla, no permite más peticiones
+              #ban_duration: 600                # Bloquea la ip del atacante durante 10 minutos (600 segundos)
 
 upstreams:
   # pagos
-  - name: pagos_health_upstream
+  - name: pagos_upstream
     targets:
       - target: 10.128.0.53:8080
         weight: 100
 
   # cobros
-  - name: cobros_health_upstream
+  - name: cobros_upstream
     targets:
       - target: 10.128.0.54:8080
+      #- target: host.docker.internal:8080
         weight: 100
 
   # descuentos
-  - name: descuentos_health_upstream
+  - name: descuentos_upstream
     targets:
       - target: 10.128.0.55:8080
         weight: 100
 
   # usuarios
-  - name: usuarios_health_upstream
+  - name: usuarios_upstream
     targets:
       - target: 10.128.0.56:8080
         weight: 100
