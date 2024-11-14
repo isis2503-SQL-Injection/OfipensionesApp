@@ -6,13 +6,18 @@ from ofipensiones.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 from ofipensiones.auth0backend import getRole
 from django.contrib.auth.decorators import login_required
+from estudiante.models import Estudiante
 from responsableEconomico.models import ResponsableEconomico
-
 
 @login_required
 def generarReciboPrematricula(request):
     if request.method == 'GET':
+        cedulaResponsable = getRole(request)        
         codigo_estudiante = request.GET.get('codigoEstudiante')
+        
+        if verificar_responsable(cedulaResponsable, codigo_estudiante) == False:
+            return render(request, 'accesoDenegado.html', {'error': 'No tiene permisos para ver este contenido'})
+        
         fecha_param = request.GET.get('fecha')
 
         fecha_limite = parse_date(fecha_param)
@@ -21,14 +26,7 @@ def generarReciboPrematricula(request):
             return render(request, 'pagos/reciboPreMatricula.html', {'error': 'Faltan parámetros o formato incorrecto'})
 
         try:
-            
-            documento_identidad_responsable = getRole(request)
-            responsable = ResponsableEconomico.objects.get(documento_identidad=documento_identidad_responsable)
-            estudiantes_asociados = responsable.estudiantes.all()
-            estudiante = estudiantes_asociados.filter(codigoEstudiante=codigo_estudiante).first()
-
-            if not estudiante:
-                return HttpResponse("Unauthorized User - Estudiante no asociado al responsable económico")
+            estudiante = Estudiante.objects.get(codigoEstudiante=codigo_estudiante)
 
             pagos_matricula = Pago.objects.filter(
                 estudiante=estudiante,
@@ -43,8 +41,6 @@ def generarReciboPrematricula(request):
                 'fecha_limite': fecha_limite
             })
 
-        except ResponsableEconomico.DoesNotExist:
-            return render(request, 'pagos/reciboPreMatricula.html', {'error': 'Responsable económico no encontrado'})
         except Estudiante.objects.get(codigoEstudiante=codigo_estudiante).DoesNotExist:
             return render(request, 'reciboPreMatricula.html', {'error': 'Estudiante no encontrado'})
 
@@ -65,3 +61,15 @@ def avisar(request):
     send_mail(subject, message, EMAIL_HOST_USER, [recepient])
     
     return render(request, 'index.html')
+
+def verificar_responsable(documento_identidad, codigo_estudiante):
+   
+    responsable = ResponsableEconomico.objects.get(documentoIdentidad=documento_identidad)
+        
+    estudiante = Estudiante.objects.get(codigoEstudiante=codigo_estudiante)
+        
+    if estudiante.responsable_economico == responsable:
+        return True 
+    else:
+        return False  
+   

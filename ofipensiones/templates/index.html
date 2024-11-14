@@ -4,24 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ofipensiones</title>
-    <a href="{% url 'logout' %}">Cerrar Sesión</a>
-    <form class="form-inline my-2 my-lg-0">
-        {% if user.is_authenticated %}
-        <ul class="nav navbar-nav navbar-right">
-            <li><a style="font-size:120%" class="nav-link">{{ user.username }}</a></li>
-            <li><a style="font-size:120%; padding-right:20px" class="nav-link" href="/logout">Log out</a></li>
-        </ul>
-        {% else %}
-        <ul class="nav navbar-nav navbar-right">
-            <li><a style="font-size:120%; padding-right:20px" class="navbar-link" href="/login/auth0">Login</a></li>
-        </ul>
-        {% endif %}
-      </form>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f8ff;
             color: #333;
+            padding: 0;
+            margin: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            background-color: #333;
+            padding: 10px;
+        }
+        .navbar a, .navbar button {
+            color: white;
+            font-size: 120%;
+            text-decoration: none;
+            padding: 0 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .navbar a:hover, .navbar button:hover {
+            color: #ddd;
+        }
+        .container {
             text-align: center;
             padding: 50px;
         }
@@ -50,14 +60,32 @@
     </style>
 </head>
 <body>
-    <h1>Bienvenido a Ofipensiones</h1>
-    <div class="button-container">
-        <button class="button" onclick="location.href='#'">Generar Reporte Saldo Pendiente</button>
-        <button class="button" onclick="location.href='#'">Generar Recibo Prematrícula</button>
-        <button class="button" onclick="location.href='/usuarios'">Usuarios</button>
-        <button class="button" onclick="location.href='/cobros'">Cobros</button>
-        <button class="button" onclick="location.href='/descuentos'">Descuentos</button>
+    <div class="navbar">
+        {% if user.is_authenticated %}
+            <!-- Botón de login para iniciar sesión con otra cuenta -->
+            <a href="/login/auth0">Login</a>
+            <!-- Mostrar el nombre de usuario -->
+            <span class="nav-link">{{ user.username }}</span>
+            <!-- Botón de cierre de sesión -->
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Cerrar Sesión</button>
+            </form>
+        {% else %}
+            <!-- Botón de login cuando el usuario no está autenticado -->
+            <a class="navbar-link" href="/login/auth0">Login</a>
+        {% endif %}
+    </div>
     
+    <div class="container">
+        <h1>Bienvenido a Ofipensiones</h1>
+        <div class="button-container">
+            <button class="button" onclick="location.href='#'">Generar Reporte Saldo Pendiente</button>
+            <button class="button" onclick="location.href='#'">Generar Recibo Prematrícula</button>
+            <button class="button" onclick="location.href='/usuarios'">Usuarios</button>
+            <button class="button" onclick="location.href='/cobros'">Cobros</button>
+            <button class="button" onclick="location.href='/descuentos'">Descuentos</button>
+        </div>
     </div>
 </body>
 </html>
