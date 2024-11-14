@@ -1,26 +1,26 @@
 _format_version: "2.1"
 
 services:
-  # pagos
-  - host: pagos_upstream
-    name: pagos_service
-    protocol: http
-    routes:
-      - name: pagos
-        paths:
-          - /pagos
-          - /pagos/menu/
-        strip_path: false
-        plugins:
-          - name: rate-limiting
-          #- name: rate-limiting-advanced
-            config:
-              minute: 100
-              limit_by: ip
-              policy: local
-              #block_on_first_violation: true   # Bloquea inmediatamente la ip del atacante si se excede el límite
-              #fault_tolerant: false            # Asegura que si el plugin falla, no permite más peticiones
-              #ban_duration: 600                # Bloquea la ip del atacante durante 10 minutos (600 segundos)           
+  # # pagos
+  # - host: pagos_upstream
+  #   name: pagos_service
+  #   protocol: http
+  #   routes:
+  #     - name: pagos
+  #       paths:
+  #         - /pagos
+  #         - /pagos/menu/
+  #       strip_path: false
+  #       plugins:
+  #         - name: rate-limiting
+  #         #- name: rate-limiting-advanced
+  #           config:
+  #             minute: 100
+  #             limit_by: ip
+  #             policy: local
+  #             #block_on_first_violation: true   # Bloquea inmediatamente la ip del atacante si se excede el límite
+  #             #fault_tolerant: false            # Asegura que si el plugin falla, no permite más peticiones
+  #             #ban_duration: 600                # Bloquea la ip del atacante durante 10 minutos (600 segundos)           
 
   # cobros
   - host: cobros_upstream
@@ -83,11 +83,11 @@ services:
               #ban_duration: 600                # Bloquea la ip del atacante durante 10 minutos (600 segundos)
 
 upstreams:
-  # pagos
-  - name: pagos_upstream
-    targets:
-      - target: 10.128.0.53:8080
-        weight: 100
+  # # pagos
+  # - name: pagos_upstream
+  #   targets:
+  #     - target: 10.128.0.53:8080
+  #       weight: 100
 
   # cobros
   - name: cobros_upstream

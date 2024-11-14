@@ -10,7 +10,7 @@
 # 2. Instancias MVs:
 #    - kong-instance
 #    - ofipensiones-db-instance
-#    - instance-pago
+# #    - instance-pago
 #    - instance-cobro
 #    - instance-descuento
 #    - instance-usuario
@@ -126,40 +126,40 @@ resources:
           sudo service postgresql restart
 
   # Pago Instance
-- type: compute.v1.instance
-  name: instance-pago
-  properties:
-    zone: us-central1-a
-    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
-    disks:
-    - deviceName: boot
-      type: PERSISTENT
-      boot: true
-      autoDelete: true
-      initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
-    networkInterfaces:
-    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
-      networkIP: 10.128.0.53
-      accessConfigs:
-      - name: External NAT
-        type: ONE_TO_ONE_NAT
-    tags:
-      items: 
-      - ofipension-services-firewall
-    metadata:
-      items:
-      - key: startup-script
-        value: |
-          #!/bin/bash
-          sudo apt-get update
-          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
-          cd OfipensionesApp
-          sudo apt install python3-pip -y
-          sudo pip3 install -r requirements.txt
-          sudo python3 manage.py makemigrations
-          sudo python3 manage.py migrate
-          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+# - type: compute.v1.instance
+#   name: instance-pago
+#   properties:
+#     zone: us-central1-a
+#     machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+#       networkIP: 10.128.0.53
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - ofipension-services-firewall
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+#           cd OfipensionesApp
+#           sudo apt install python3-pip -y
+#           sudo pip3 install -r requirements.txt
+#           sudo python3 manage.py makemigrations
+#           sudo python3 manage.py migrate
+#           sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
 
   # Cobro Instance
 - type: compute.v1.instance
