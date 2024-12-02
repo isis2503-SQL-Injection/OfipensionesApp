@@ -91,7 +91,7 @@ DATABASES = {
         'NAME': 'ofipensionesdb',
         'USER': 'admin',
         'PASSWORD': 'oficlaveinjection',
-        'HOST': 'localhost',
+        'HOST': '10.128.0.52',
         'PORT': '5432',
     }
 }

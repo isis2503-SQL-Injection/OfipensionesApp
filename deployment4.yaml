@@ -1,0 +1,207 @@
+# Infraestructura para Despliegue de Latencia sprint 4
+# Elementos a desplegar:
+# 1. Reglas de firewall:
+#     - firewall-django
+#     - firewall-db
+
+# 2. Instancias MVs:
+#    - ofipensiones-db-instance
+#    - instance-reporte-a
+#    - instance-reporte-b
+#    - instance-reporte-c
+
+# hay que poner manualmente el super usuario en una de las instancias de reportes, y crear el load balancer
+
+resources:
+# Firewall rules
+- name: firewall-django
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges:
+    - 0.0.0.0/0
+    targetTags:
+    - rest-django
+    allowed:
+    - IPProtocol: TCP
+      ports:
+      - 8080
+
+- name: firewall-db
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags:
+    - rest-django
+    targetTags:
+    - db-instance
+    allowed:
+    - IPProtocol: TCP
+      ports:
+      - 5432
+
+
+# Database instance
+- type: compute.v1.instance
+  name: ofipensiones-db-instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.52
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - db-instance
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt-get install -y postgresql postgresql-contrib
+          sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'oficlaveinjection';"
+          sudo -u postgres createdb -O admin ofipensionesdb
+          echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
+          echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+          echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+          sudo service postgresql restart
+
+# Reportes Instances
+- type: compute.v1.instance
+  name: instance-reporte-a
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.53
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - rest-django
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+- type: compute.v1.instance
+  name: instance-reporte-b
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.54
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - rest-django
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+- type: compute.v1.instance
+  name: instance-reporte-c
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.54
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - rest-django
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
+          cd OfipensionesApp
+          sudo apt install python3-pip -y
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+# Unmanaged Instance Group
+- type: compute.v1.instanceGroup
+  name: instance-group-reportes
+  properties:
+    name: instance-group-reportes
+    zone: us-central1-a
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    instances:
+    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/instance-reporte-a
+    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/instance-reporte-b
+    - https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/instances/instance-reporte-c
+
+
+
+
+
+
+
