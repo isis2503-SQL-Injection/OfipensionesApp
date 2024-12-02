@@ -41,7 +41,7 @@ urlpatterns = [
     path('cobros/', include('cobro.urls')),
     path('descuentos/', include('descuento.urls')),
     path('usuarios/', include('usuario.urls')),  
-    path('reportes/', include('reportes.urls')),    
+    path('reportes/', include('reporte.urls')),    
     path(r'', include('django.contrib.auth.urls')),
     path(r'', include('social_django.urls')),
     

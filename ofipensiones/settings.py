@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'cobro',
     'descuento',
     'responsableEconomico',
-    'usuario'
+    'usuario',
 ]
 
 MIDDLEWARE = [
