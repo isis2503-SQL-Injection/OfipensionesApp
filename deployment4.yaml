@@ -166,7 +166,7 @@ resources:
         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
-      networkIP: 10.128.0.54
+      networkIP: 10.128.0.55
       accessConfigs:
       - name: External NAT
         type: ONE_TO_ONE_NAT
