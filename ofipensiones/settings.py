@@ -87,15 +87,14 @@ WSGI_APPLICATION = 'ofipensiones.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',  
-        'NAME': 'ofipensionesdb', 
-        'CLIENT': {
-            'host': 'mongodb://usuarioOfipension:claveOfipension@localhost:27017/', 
-            'authSource': 'admin',  
-        },
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'ofipensionesdb',
+        'USER': 'admin',
+        'PASSWORD': 'oficlaveinjection',
+        'HOST': '10.128.0.52',
+        'PORT': '5432',
     }
 }
-
 
 
 # Password validation
