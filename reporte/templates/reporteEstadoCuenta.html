@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Estado de Cuenta</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Reporte de Estado de Cuenta</h1>
+        
+        {% if error %}
+            <div class="alert alert-danger">
+                {{ error }}
+            </div>
+        {% else %}
+            <div class="mb-4">
+                <h4>Información del Estudiante</h4>
+                <p><strong>Código:</strong> {{ codigo_estudiante }}</p>
+                <p><strong>Estado de la Cuenta:</strong> {{ estado_cuenta }}</p>
+                <p><strong>Saldo Pendiente:</strong> ${{ saldo_pendiente }}</p>
+            </div>
+
+            <div class="mb-4">
+                <h4>Reportes Asociados</h4>
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Fecha de Emisión</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if reportes %}
+                            {% for reporte in reportes %}
+                                <tr>
+                                    <td>{{ reporte.fecha_emision }}</td>
+                                    <td>{{ reporte.descripcion }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="text-center">No se encontraron reportes antes de la fecha especificada.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
