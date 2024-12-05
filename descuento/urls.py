@@ -2,6 +2,7 @@ from django.urls import path
 from descuento import views
 
 urlpatterns = [
-    path('', views.index),
+    path('descuentos/', views.revisarDescuentos),
+    path('nuevodescuento/', views.nuevo_descuento)
 
 ]
