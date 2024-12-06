@@ -5,8 +5,7 @@
 #     - firewall-db
 
 # 2. Instancias MVs:
-#    - ofipensiones-db-lectura 10.128.0.60
-#    - ofipensiones-db-escritura 10.128.0.61
+
 #    - instance-pago-master 10.128.0.70
 #    - instance-pago-novato 10.128.0.71
 #    - kong-instance 10.128.0.55
@@ -88,7 +87,6 @@ resources:
       - key: startup-script
         value: |
           #!/bin/bash
-          # Add Docker's official GPG key:
           sudo apt-get update && sudo apt-get upgrade -y
           sudo apt-get install ca-certificates curl
           sudo install -m 0755 -d /etc/apt/keyrings
