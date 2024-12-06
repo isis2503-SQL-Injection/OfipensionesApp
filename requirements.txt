@@ -8,11 +8,3 @@ dnspython==2.3.0
 django-mongoengine==0.5.4
 djangorestframework==3.9.0
 python-dotenv==0.9.1
-django-debug-toolbar==3.2.4
-cryptography==41.0.0
-ujson==5.8.0
-python-dateutil==2.8.2
-djangorestframework-simplejwt==5.2.0
-pytest==7.4.0
-pytest-django==4.5.2
-boto3==1.28.20
