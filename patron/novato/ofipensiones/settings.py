@@ -88,11 +88,11 @@ WSGI_APPLICATION = 'ofipensiones.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ofipensionesdb',
-        'USER': 'admin',
-        'PASSWORD': 'oficlaveinjection',
-        'HOST': '10.128.0.52',
-        'PORT': '5432',
+        'NAME': 'novato-db',
+        'USER': 'novato-user',
+        'PASSWORD': 'isis2503',
+        'HOST': '10.126.224.3',
+        'PORT': 5432,
     }
 }
 
@@ -169,4 +169,13 @@ SOCIAL_AUTH_AUTH0_SCOPE = [
 AUTHENTICATION_BACKENDS = {
 	'ofipensiones.auth0backend.Auth0',
 	'django.contrib.auth.backends.ModelBackend',
+}
+
+# CQRS settings
+CQRS = {
+    'transport': 'dj_cqrs.transport.RabbitMQTransport',
+    'host': '10.128.0.90',
+    'port': 5672,
+    'user': 'msger',
+    'password': 'isis2503',
 }

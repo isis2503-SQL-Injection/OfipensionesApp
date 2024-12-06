@@ -57,29 +57,6 @@ def nuevo_descuento(request):
                 porcentaje=porcentaje
             )
 
-
-            # Send a message to RabbitMQ to notify the second instance to update the second DB
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq-service'))
-            channel = connection.channel()
-
-            # Declare a queue for the message
-            channel.queue_declare(queue='descuentos_queue')
-
-            # Message payload with the Descuento data
-            message = {
-                'estudiante_id': estudiante_id,
-                'mes': mes.strftime("%Y-%m-%d"),
-                'porcentaje': float(porcentaje),
-            }
-
-            # Send the message to RabbitMQ
-            channel.basic_publish(exchange='',
-                                  routing_key='descuentos_queue',
-                                  body=json.dumps(message))
-
-            # Close the connection
-            connection.close()
-
             return JsonResponse({
                 "message": "Descuento added successfully",
                 "descuento": {

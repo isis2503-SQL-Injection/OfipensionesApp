@@ -10,6 +10,7 @@
 #    - instance-pago-master 10.128.0.70
 #    - instance-pago-novato 10.128.0.71
 #    - kong-instance 10.128.0.55
+#    - rabbitmq-instance 10.128.0.90
 
 
 resources:
@@ -60,76 +61,6 @@ resources:
       ports:
       - 8082 
 
-- type: compute.v1.instance
-  name: ofipensiones-db-lectura
-  properties:
-    zone: us-central1-a
-    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
-    disks:
-    - deviceName: boot
-      type: PERSISTENT
-      boot: true
-      autoDelete: true
-      initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
-    networkInterfaces:
-    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
-      networkIP: 10.128.0.60
-      accessConfigs:
-      - name: External NAT
-        type: ONE_TO_ONE_NAT
-    tags:
-      items: 
-      - db-instance
-    metadata:
-      items:
-      - key: startup-script
-        value: |
-          #!/bin/bash
-          sudo apt-get update
-          sudo apt-get install -y postgresql postgresql-contrib
-          sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'oficlaveinjection';"
-          sudo -u postgres createdb -O admin ofipensionesdb
-          echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
-          echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
-          echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
-          sudo service postgresql restart
-
-- type: compute.v1.instance
-  name: ofipensiones-db-escritura
-  properties:
-    zone: us-central1-a
-    machineType: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/zones/us-central1-a/machineTypes/e2-micro
-    disks:
-    - deviceName: boot
-      type: PERSISTENT
-      boot: true
-      autoDelete: true
-      initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20241016
-    networkInterfaces:
-    - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
-      networkIP: 10.128.0.61
-      accessConfigs:
-      - name: External NAT
-        type: ONE_TO_ONE_NAT
-    tags:
-      items: 
-      - db-instance
-    metadata:
-      items:
-      - key: startup-script
-        value: |
-          #!/bin/bash
-          sudo apt-get update
-          sudo apt-get install -y postgresql postgresql-contrib
-          sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD 'oficlaveinjection';"
-          sudo -u postgres createdb -O admin ofipensionesdb
-          echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
-          echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
-          echo "max_connections=2000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
-          sudo service postgresql restart
-
 # RabbitMQ Instance
 - type: compute.v1.instance
   name: rabbitmq-instance
@@ -145,6 +76,7 @@ resources:
         sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-11
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+      networkIP: 10.128.0.90
       accessConfigs:
       - name: External NAT
         type: ONE_TO_ONE_NAT
@@ -156,11 +88,15 @@ resources:
       - key: startup-script
         value: |
           #!/bin/bash
-          sudo apt-get update
-          sudo apt-get install -y rabbitmq-server
-          sudo systemctl enable rabbitmq-server
-          sudo systemctl start rabbitmq-server
-          sudo rabbitmq-plugins enable rabbitmq_management
+          # Add Docker's official GPG key:
+          sudo apt-get update && sudo apt-get upgrade -y
+          sudo apt-get install ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+          echo \ "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \$(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+          sudo docker run -d --hostname mensajero --name mensajero -e RABBITMQ_DEFAULT_USER=msger -e RABBITMQ_DEFAULT_PASS=isis2503 -p 5672:5672 rabbitmq:3
 
 - type: compute.v1.instance
   name: instance-pago-master
@@ -191,8 +127,12 @@ resources:
           sudo apt-get update
           sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
           cd OfipensionesApp
+          git checkout cqrs-ayuda
+          cd patron
+          cd master
           sudo apt install python3-pip -y
           sudo pip3 install -r requirements.txt
+          sudo pip3 install django-cqrs
           sudo python3 manage.py makemigrations
           sudo python3 manage.py migrate
           sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
@@ -226,8 +166,12 @@ resources:
           sudo apt-get update
           sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
           cd OfipensionesApp
+          git checkout cqrs-ayuda
+          cd patron
+          cd novato
           sudo apt install python3-pip -y
           sudo pip3 install -r requirements.txt
+          sudo pip3 install django-cqrs
           sudo python3 manage.py makemigrations
           sudo python3 manage.py migrate
           sudo pip3 install pika

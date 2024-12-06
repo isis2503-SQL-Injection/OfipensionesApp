@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ofipensiones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            padding: 0;
+            margin: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            background-color: #333;
+            padding: 10px;
+        }
+        .navbar a, .navbar button {
+            color: white;
+            font-size: 120%;
+            text-decoration: none;
+            padding: 0 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .navbar a:hover, .navbar button:hover {
+            color: #ddd;
+        }
+        .container {
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #2e8b57;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        {% if user.is_authenticated %}
+            <!-- Botón de login para iniciar sesión con otra cuenta -->
+            <a href="/login/auth0">Login</a>
+            <!-- Mostrar el nombre de usuario -->
+            <span class="nav-link">{{ user.username }}</span>
+            <!-- Botón de cierre de sesión -->
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Cerrar Sesión</button>
+            </form>
+        {% else %}
+            <!-- Botón de login cuando el usuario no está autenticado -->
+            <a class="navbar-link" href="/login/auth0">Login</a>
+        {% endif %}
+    </div>
+    
+    <div class="container">
+        <h1>Bienvenido a Ofipensiones</h1>
+        <div class="button-container">
+            <button class="button" onclick="location.href='#'">Generar Reporte Saldo Pendiente</button>
+            <button class="button" onclick="location.href='#'">Generar Recibo Prematrícula</button>
+            <button class="button" onclick="location.href='/usuarios'">Usuarios</button>
+            <button class="button" onclick="location.href='/cobros'">Cobros</button>
+            <button class="button" onclick="location.href='/descuentos'">Descuentos</button>
+        </div>
+    </div>
+</body>
+</html>
