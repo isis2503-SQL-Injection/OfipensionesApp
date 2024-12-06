@@ -7,47 +7,70 @@ from .models import Cuenta
 from estudiante.models import Estudiante
 from reporte.models import Reporte
 from django.utils.dateparse import parse_date
+from django.shortcuts import render
+from pymongo import MongoClient
+from django.conf import settings
+from datetime import datetime
+from rest_framework.decorators import api_view
 
-
-
-
+@api_view(["GET"])
 def reporteEstadoCuenta(request):
-    if request.method == 'GET':
+    client = MongoClient(settings.MONGO_CLI)
+    db = client['ofipensionesdb']  
+    estudiantes_collection = db['estudiantes']
+    cuentas_collection = db['cuentas']
+    reportes_collection = db['reportes']
+
+    try:
         codigo_estudiante = request.GET.get('codigoEstudiante')
         fecha_param = request.GET.get('fecha')
-        fecha_limite = parse_date(fecha_param)
 
-        if not codigo_estudiante or not fecha_limite:
-            return render(request, 'reporteEstadoCuenta.html', {'error': 'Faltan parámetros o formato incorrecto'})
+        if not codigo_estudiante or not fecha_param:
+            client.close()
+            return render(request, 'reporteEstadoCuenta.html', {'error': 'Faltan parámetros'})
+
         try:
+            fecha_limite = datetime.strptime(fecha_param, '%Y-%m-%d')  
+        except ValueError:
+            client.close()
+            return render(request, 'reporteEstadoCuenta.html', {'error': 'Formato de fecha incorrecto'})
 
-            estudiante = Estudiante.objects.get(codigoEstudiante=codigo_estudiante)
-            cuenta = Cuenta.objects.get(estudiante=estudiante)
-            reportes = Reporte.objects.filter(cuentas=cuenta, fechaEmision__lte=fecha_limite)
-        
-            reportes_data = [
-                    {
-                        'fecha_emision': reporte.fechaEmision,
-                        'descripcion': reporte.descripcion,
-                    }
-                    for reporte in reportes
-                ]
-            return render(request, 'reporteEstadoCuenta.html', {
-                'codigo_estudiante': estudiante.codigoEstudiante,
-                'saldo_pendiente': cuenta.saldoPendiente,
-                'estado_cuenta': cuenta.estado,
-                'reportes': reportes_data,
-
-            })
-
-        except Estudiante.objects.get(codigoEstudiante=codigo_estudiante).DoesNotExist:
+        estudiante = estudiantes_collection.find_one({'codigoEstudiante': codigo_estudiante})
+        if not estudiante:
+            client.close()
             return render(request, 'reporteEstadoCuenta.html', {'error': 'Estudiante no encontrado'})
 
-        except Cuenta.objects.get(estudiante=estudiante).DoesNotExist:
+        cuenta = cuentas_collection.find_one({'estudiante': estudiante['_id']})
+        if not cuenta:
+            client.close()
             return render(request, 'reporteEstadoCuenta.html', {'error': 'Cuenta no encontrada'})
 
-    return render(request, 'reporteEstadoCuenta.html', {'error': 'Método no permitido'})
-        
+        reportes = reportes_collection.find({
+            'cuentas': cuenta['_id'],
+            'fechaEmision': {'$lte': fecha_limite}
+        })
+
+        reportes_data = [
+            {
+                'fecha_emision': reporte['fechaEmision'],
+                'descripcion': reporte['descripcion'],
+            }
+            for reporte in reportes
+        ]
+
+        client.close()
+
+        return render(request, 'reporteEstadoCuenta.html', {
+            'codigo_estudiante': estudiante['codigoEstudiante'],
+            'saldo_pendiente': cuenta['saldoPendiente'],
+            'estado_cuenta': cuenta['estado'],
+            'reportes': reportes_data,
+        })
+
+    except Exception as e:
+        client.close()
+        return render(request, 'reporteEstadoCuenta.html', {'error': str(e)})
+
         
         
 @api_view(["GET"])

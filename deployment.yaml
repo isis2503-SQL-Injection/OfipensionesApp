@@ -111,6 +111,10 @@ resources:
           sudo git clone https://github.com/isis2503-SQL-Injection/OfipensionesApp.git
           cd OfipensionesApp
           sudo apt install python3-pip -y
+          sudo apt update
+          sudo apt install -y docker.io
+          sudo usermod -aG docker $USER
+          sudo newgrp docker
           sudo pip3 install -r requirements.txt
           sudo docker run -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=oficlaveinjection -p 27017:27017 -d mongo
 
