@@ -95,7 +95,7 @@ resources:
           echo \ "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \$(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
           sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
           sudo docker run -d --hostname mensajero --name mensajero -e RABBITMQ_DEFAULT_USER=msger -e RABBITMQ_DEFAULT_PASS=isis2503 -p 5672:5672 rabbitmq:3
-
+#master
 - type: compute.v1.instance
   name: instance-pago-master
   properties:
