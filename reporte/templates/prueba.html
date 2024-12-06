@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes</title>
+</head>
+<body>
+    <h1>Lista de Reportes</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha de Emisión</th>
+                <th>Descripción</th>
+                <th>Cuentas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reporte in reportes %}
+            <tr>
+                <td>{{ reporte.id }}</td>
+                <td>{{ reporte.fechaEmision }}</td>
+                <td>{{ reporte.descripcion }}</td>
+                <td>
+                    <ul>
+                        {% for cuenta in reporte.cuentas %}
+                        <li>{{ cuenta }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

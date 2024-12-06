@@ -170,3 +170,5 @@ AUTHENTICATION_BACKENDS = {
 	'ofipensiones.auth0backend.Auth0',
 	'django.contrib.auth.backends.ModelBackend',
 }
+
+MONGO_CLI = os.environ['MONGO_CLIENT']

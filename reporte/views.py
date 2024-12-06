@@ -1,8 +1,15 @@
+from django.http import JsonResponse
+from pymongo import MongoClient
+from django.conf import settings
+from rest_framework.decorators import api_view
 from django.shortcuts import render
 from .models import Cuenta
 from estudiante.models import Estudiante
 from reporte.models import Reporte
 from django.utils.dateparse import parse_date
+
+
+
 
 def reporteEstadoCuenta(request):
     if request.method == 'GET':
@@ -41,3 +48,30 @@ def reporteEstadoCuenta(request):
 
     return render(request, 'reporteEstadoCuenta.html', {'error': 'Método no permitido'})
         
+        
+        
+@api_view(["GET"])
+def prueba(request):
+    client = MongoClient(settings.MONGO_CLI)
+    db = client['ofipensionesdb']  
+    reportes = db['reportes']  
+
+    try:
+        result = []
+        data = reportes.find({})
+        for dto in data:
+            jsonData = {
+                'id': str(dto['_id']),
+                'fechaEmision': dto['fechaEmision'],  
+                'descripcion': dto['descripcion'],
+                'cuentas': dto.get('cuentas', []),  
+            }
+            result.append(jsonData)
+        
+        client.close()
+
+        return render(request, 'prueba.html', {'reportes': result})
+
+    except Exception as e:
+        client.close()
+        return JsonResponse({"error": str(e)}, status=500)
