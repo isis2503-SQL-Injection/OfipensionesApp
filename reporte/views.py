@@ -12,6 +12,7 @@ from pymongo import MongoClient
 from django.conf import settings
 from datetime import datetime
 from rest_framework.decorators import api_view
+import seguridad as sec
 
 @api_view(["GET"])
 def reporteEstadoCuenta(request):
@@ -61,10 +62,10 @@ def reporteEstadoCuenta(request):
         client.close()
 
         return render(request, 'reporteEstadoCuenta.html', {
-            'codigo_estudiante': estudiante['codigoEstudiante'],
-            'saldo_pendiente': cuenta['saldoPendiente'],
-            'estado_cuenta': cuenta['estado'],
-            'reportes': reportes_data,
+            'codigo_estudiante': sec.descifrar_dato(estudiante['codigoEstudiante']),
+            'saldo_pendiente':sec.descifrar_dato(cuenta['saldoPendiente']),
+            'estado_cuenta': sec.descifrar_dato(cuenta['estado']),
+            'reportes':sec.descifrar_dato(reportes_data),
         })
 
     except Exception as e:
