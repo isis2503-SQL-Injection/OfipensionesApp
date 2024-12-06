@@ -171,4 +171,4 @@ AUTHENTICATION_BACKENDS = {
 	'django.contrib.auth.backends.ModelBackend',
 }
 
-MONGO_CLI = os.environ['MONGO_CLIENT']
+MONGO_CLI = "mongodb://admin:oficlaveinjection@10.128.0.52:27017"
